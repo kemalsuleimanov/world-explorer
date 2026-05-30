@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Explorer</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:'Poppins',sans-serif;
+        }
+
+        body{
+            min-height:100vh;
+            background:linear-gradient(-45deg,#0f172a,#1e3a8a,#4f46e5,#7c3aed);
+            background-size:400% 400%;
+            animation:gradient 15s ease infinite;
+            color:white;
+            padding:30px;
+        }
+
+        @keyframes gradient{
+            0%{background-position:0% 50%;}
+            50%{background-position:100% 50%;}
+            100%{background-position:0% 50%;}
+        }
+
+        .header{
+            text-align:center;
+            margin-bottom:30px;
+        }
+
+        .header h1{
+            font-size:3rem;
+            margin-bottom:10px;
+        }
+
+        .header p{
+            opacity:.8;
+        }
+
+        .search-box{
+            max-width:600px;
+            margin:20px auto 40px;
+        }
+
+        .search-box input{
+            width:100%;
+            padding:15px 20px;
+            border:none;
+            border-radius:20px;
+            outline:none;
+            background:rgba(255,255,255,.15);
+            backdrop-filter:blur(10px);
+            color:white;
+            font-size:16px;
+        }
+
+        .search-box input::placeholder{
+            color:rgba(255,255,255,.7);
+        }
+
+        .stats{
+            display:flex;
+            justify-content:center;
+            gap:20px;
+            margin-bottom:30px;
+            flex-wrap:wrap;
+        }
+
+        .stat{
+            background:rgba(255,255,255,.1);
+            backdrop-filter:blur(12px);
+            padding:15px 25px;
+            border-radius:20px;
+            text-align:center;
+        }
+
+        .stat h2{
+            font-size:1.6rem;
+        }
+
+        .grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+            gap:20px;
+        }
+
+        .card{
+            background:rgba(255,255,255,.12);
+            backdrop-filter:blur(18px);
+            border:1px solid rgba(255,255,255,.15);
+            border-radius:20px;
+            overflow:hidden;
+            transition:.3s;
+        }
+
+        .card:hover{
+            transform:translateY(-8px);
+            box-shadow:0 20px 40px rgba(0,0,0,.25);
+        }
+
+        .flag{
+            width:100%;
+            height:180px;
+            object-fit:cover;
+        }
+
+        .content{
+            padding:18px;
+        }
+
+        .country{
+            font-size:1.3rem;
+            font-weight:600;
+            margin-bottom:10px;
+        }
+
+        .info{
+            display:flex;
+            justify-content:space-between;
+            margin:8px 0;
+            font-size:.92rem;
+        }
+
+        .label{
+            opacity:.7;
+        }
+
+        .time{
+            color:#ffd700;
+            font-weight:600;
+        }
+
+        .loading{
+            text-align:center;
+            font-size:1.4rem;
+            margin-top:100px;
+        }
+
+        @media(max-width:768px){
+            .header h1{
+                font-size:2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>🌍 World Explorer</h1>
+    <p>Countries • Flags • Local Time • Currency</p>
+</div>
+
+<div class="search-box">
+    <input type="text" id="search" placeholder="Search country...">
+</div>
+
+<div class="stats">
+    <div class="stat">
+        <h2 id="countryCount">0</h2>
+        <p>Countries</p>
+    </div>
+
+    <div class="stat">
+        <h2 id="currencyCount">0</h2>
+        <p>Currencies</p>
+    </div>
+</div>
+
+<div id="countries" class="grid">
+    <div class="loading">Loading countries...</div>
+</div>
+
+<script>
+
+    let allCountries = [];
+
+    async function loadCountries() {
+        try {
+
+            const response = await fetch(
+              "https://restcountries.com/v3.1/all?fields=name,flags,currencies,timezones,population,region"
+            );
+
+            const countries = await response.json();
+
+            allCountries = countries.sort((a,b)=>
+                a.name.common.localeCompare(b.name.common)
+            );
+
+            document.getElementById("countryCount").textContent =
+                allCountries.length;
+
+            const currencies = new Set();
+
+            allCountries.forEach(c=>{
+                if(c.currencies){
+                    Object.keys(c.currencies).forEach(cur=>{
+                        currencies.add(cur);
+                    });
+                }
+            });
+
+            document.getElementById("currencyCount").textContent =
+                currencies.size;
+
+            renderCountries(allCountries);
+
+            setInterval(()=>{
+                renderCountries(filterCurrent());
+            },1000);
+
+        } catch(error){
+            document.getElementById("countries").innerHTML =
+                "<h2>Failed to load countries</h2>";
+        }
+    }
+
+    function getLocalTime(timezone) {
+        try {
+
+            if (timezone.startsWith("UTC")) {
+
+                const now = new Date();
+
+                const match = timezone.match(
+                    /UTC([+-])(\d{1,2})(?::(\d{2}))?/
+                );
+
+                if (!match) return "N/A";
+
+                const sign = match[1] === "+" ? 1 : -1;
+                const hours = parseInt(match[2]);
+                const minutes = parseInt(match[3] || 0);
+
+                const offsetMs =
+                    sign *
+                    ((hours * 60 + minutes) * 60 * 1000);
+
+                const utc =
+                    now.getTime() +
+                    now.getTimezoneOffset() * 60000;
+
+                const local = new Date(utc + offsetMs);
+
+                return local.toLocaleTimeString("en-US");
+            }
+
+            return new Date().toLocaleTimeString(
+                "en-US",
+                { timeZone: timezone }
+            );
+
+        } catch (e) {
+            return "N/A";
+        }
+    }
+
+    function renderCountries(countries){
+
+        const container = document.getElementById("countries");
+
+        container.innerHTML = countries.map(country=>{
+
+            const currency = country.currencies
+                ? Object.entries(country.currencies)[0]
+                : null;
+
+            const currencyCode = currency ? currency[0] : "N/A";
+            const currencyName = currency ? currency[1].name : "N/A";
+
+            const timezone = country.timezones?.[0] || "UTC";
+
+            return `
+            <div class="card">
+
+                <img class="flag"
+                     src="${country.flags.svg}"
+                     alt="${country.name.common}">
+
+                <div class="content">
+
+                    <div class="country">
+                        ${country.name.common}
+                    </div>
+
+                    <div class="info">
+                        <span class="label">Region</span>
+                        <span>${country.region || 'N/A'}</span>
+                    </div>
+
+                    <div class="info">
+                        <span class="label">Currency</span>
+                        <span>${currencyCode}</span>
+                    </div>
+
+                    <div class="info">
+                        <span class="label">Currency Name</span>
+                        <span>${currencyName}</span>
+                    </div>
+
+                    <div class="info">
+                        <span class="label">Local Time</span>
+                        <span class="time">
+                            ${getLocalTime(timezone)}
+                        </span>
+                    </div>
+
+                    <div class="info">
+                        <span class="label">Population</span>
+                        <span>
+                            ${country.population.toLocaleString()}
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    function filterCurrent(){
+        const search = document
+            .getElementById("search")
+            .value
+            .toLowerCase();
+
+        return allCountries.filter(country =>
+            country.name.common.toLowerCase()
+            .includes(search)
+        );
+    }
+
+    document.getElementById("search")
+    .addEventListener("input",()=>{
+        renderCountries(filterCurrent());
+    });
+
+    loadCountries();
+
+</script>
+
+</body>
+</html>
