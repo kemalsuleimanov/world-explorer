@@ -31,24 +31,11 @@
             100%{background-position:0% 50%;}
         }
 
-        .header{
-            text-align:center;
-            margin-bottom:30px;
-        }
+        .header{ text-align:center; margin-bottom:30px; }
+        .header h1{ font-size:3rem; margin-bottom:10px; }
+        .header p{ opacity:.8; }
 
-        .header h1{
-            font-size:3rem;
-            margin-bottom:10px;
-        }
-
-        .header p{
-            opacity:.8;
-        }
-
-        .search-box{
-            max-width:600px;
-            margin:20px auto 40px;
-        }
+        .search-box{ max-width:600px; margin:20px auto 40px; }
 
         .search-box input{
             width:100%;
@@ -62,9 +49,7 @@
             font-size:16px;
         }
 
-        .search-box input::placeholder{
-            color:rgba(255,255,255,.7);
-        }
+        .search-box input::placeholder{ color:rgba(255,255,255,.7); }
 
         .stats{
             display:flex;
@@ -82,9 +67,7 @@
             text-align:center;
         }
 
-        .stat h2{
-            font-size:1.6rem;
-        }
+        .stat h2{ font-size:1.6rem; }
 
         .grid{
             display:grid;
@@ -106,48 +89,52 @@
             box-shadow:0 20px 40px rgba(0,0,0,.25);
         }
 
-        .flag{
+        .flag-box{
             width:100%;
             height:180px;
+            background:rgba(0,0,0,.15);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:6rem;
+            overflow:hidden;
+        }
+
+        .flag{
+            width:100%;
+            height:100%;
             object-fit:cover;
         }
 
-        .content{
-            padding:18px;
-        }
+        .content{ padding:18px; }
 
-        .country{
-            font-size:1.3rem;
-            font-weight:600;
-            margin-bottom:10px;
-        }
+        .country{ font-size:1.3rem; font-weight:600; margin-bottom:10px; }
 
         .info{
             display:flex;
             justify-content:space-between;
+            gap:12px;
             margin:8px 0;
             font-size:.92rem;
         }
 
-        .label{
-            opacity:.7;
-        }
+        .info span:last-child{ text-align:right; }
 
-        .time{
-            color:#ffd700;
-            font-weight:600;
-        }
+        .label{ opacity:.7; }
 
-        .loading{
+        .time{ color:#ffd700; font-weight:600; }
+
+        .empty{
+            grid-column:1 / -1;
             text-align:center;
             font-size:1.4rem;
-            margin-top:100px;
+            margin-top:60px;
         }
 
         @media(max-width:768px){
-            .header h1{
-                font-size:2rem;
-            }
+            body{ padding:16px; }
+            .header h1{ font-size:2rem; }
+            .grid{ grid-template-columns:1fr; }
         }
     </style>
 </head>
@@ -160,7 +147,7 @@
 </div>
 
 <div class="search-box">
-    <input type="text" id="search" placeholder="Search country...">
+    <input type="text" id="search" placeholder="Search country, code, region or currency...">
 </div>
 
 <div class="stats">
@@ -168,184 +155,126 @@
         <h2 id="countryCount">0</h2>
         <p>Countries</p>
     </div>
-
     <div class="stat">
         <h2 id="currencyCount">0</h2>
         <p>Currencies</p>
     </div>
 </div>
 
-<div id="countries" class="grid">
-    <div class="loading">Loading countries...</div>
-</div>
+<div id="countries" class="grid"></div>
 
 <script>
+    // Static data for every ISO 3166 country & territory — no API calls.
+    // Populations are rounded mid-2020s estimates.
+    const COUNTRIES = [{"code":"AF","name":"Afghanistan","region":"Asia","currencies":[{"code":"AFN","name":"Afghan Afghani"}],"timezone":"Asia/Kabul","timezoneCount":1,"population":42600000},{"code":"AL","name":"Albania","region":"Europe","currencies":[{"code":"ALL","name":"Albanian Lek"}],"timezone":"Europe/Tirane","timezoneCount":1,"population":2700000},{"code":"DZ","name":"Algeria","region":"Africa","currencies":[{"code":"DZD","name":"Algerian Dinar"}],"timezone":"Africa/Algiers","timezoneCount":1,"population":46800000},{"code":"AS","name":"American Samoa","region":"Oceania","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"Pacific/Pago_Pago","timezoneCount":1,"population":44000},{"code":"AD","name":"Andorra","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Andorra","timezoneCount":1,"population":81000},{"code":"AO","name":"Angola","region":"Africa","currencies":[{"code":"AOA","name":"Angolan Kwanza"}],"timezone":"Africa/Luanda","timezoneCount":1,"population":37900000},{"code":"AI","name":"Anguilla","region":"Americas","currencies":[{"code":"XCD","name":"East Caribbean Dollar"}],"timezone":"America/Anguilla","timezoneCount":1,"population":16000},{"code":"AQ","name":"Antarctica","region":"Antarctic","currencies":[],"timezone":"UTC","timezoneCount":10,"population":0},{"code":"AG","name":"Antigua & Barbuda","region":"Americas","currencies":[{"code":"XCD","name":"East Caribbean Dollar"}],"timezone":"America/Antigua","timezoneCount":1,"population":94000},{"code":"AR","name":"Argentina","region":"Americas","currencies":[{"code":"ARS","name":"Argentine Peso"}],"timezone":"America/Argentina/Buenos_Aires","timezoneCount":12,"population":45700000},{"code":"AM","name":"Armenia","region":"Asia","currencies":[{"code":"AMD","name":"Armenian Dram"}],"timezone":"Asia/Yerevan","timezoneCount":1,"population":3000000},{"code":"AW","name":"Aruba","region":"Americas","currencies":[{"code":"AWG","name":"Aruban Florin"}],"timezone":"America/Aruba","timezoneCount":1,"population":108000},{"code":"AU","name":"Australia","region":"Oceania","currencies":[{"code":"AUD","name":"Australian Dollar"}],"timezone":"Australia/Sydney","timezoneCount":12,"population":27200000},{"code":"AT","name":"Austria","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Vienna","timezoneCount":1,"population":9200000},{"code":"AZ","name":"Azerbaijan","region":"Asia","currencies":[{"code":"AZN","name":"Azerbaijani Manat"}],"timezone":"Asia/Baku","timezoneCount":1,"population":10200000},{"code":"BS","name":"Bahamas","region":"Americas","currencies":[{"code":"BSD","name":"Bahamian Dollar"}],"timezone":"America/Nassau","timezoneCount":1,"population":400000},{"code":"BH","name":"Bahrain","region":"Asia","currencies":[{"code":"BHD","name":"Bahraini Dinar"}],"timezone":"Asia/Bahrain","timezoneCount":1,"population":1600000},{"code":"BD","name":"Bangladesh","region":"Asia","currencies":[{"code":"BDT","name":"Bangladeshi Taka"}],"timezone":"Asia/Dhaka","timezoneCount":1,"population":173600000},{"code":"BB","name":"Barbados","region":"Americas","currencies":[{"code":"BBD","name":"Barbadian Dollar"}],"timezone":"America/Barbados","timezoneCount":1,"population":282000},{"code":"BY","name":"Belarus","region":"Europe","currencies":[{"code":"BYN","name":"Belarusian Ruble"}],"timezone":"Europe/Minsk","timezoneCount":1,"population":9100000},{"code":"BE","name":"Belgium","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Brussels","timezoneCount":1,"population":11800000},{"code":"BZ","name":"Belize","region":"Americas","currencies":[{"code":"BZD","name":"Belize Dollar"}],"timezone":"America/Belize","timezoneCount":1,"population":417000},{"code":"BJ","name":"Benin","region":"Africa","currencies":[{"code":"XOF","name":"West African CFA Franc"}],"timezone":"Africa/Porto-Novo","timezoneCount":1,"population":14500000},{"code":"BM","name":"Bermuda","region":"Americas","currencies":[{"code":"BMD","name":"Bermudan Dollar"}],"timezone":"Atlantic/Bermuda","timezoneCount":1,"population":64000},{"code":"BT","name":"Bhutan","region":"Asia","currencies":[{"code":"INR","name":"Indian Rupee"},{"code":"BTN","name":"Bhutanese Ngultrum"}],"timezone":"Asia/Thimphu","timezoneCount":1,"population":790000},{"code":"BO","name":"Bolivia","region":"Americas","currencies":[{"code":"BOB","name":"Bolivian Boliviano"}],"timezone":"America/La_Paz","timezoneCount":1,"population":12400000},{"code":"BA","name":"Bosnia & Herzegovina","region":"Europe","currencies":[{"code":"BAM","name":"Bosnia-Herzegovina Convertible Mark"}],"timezone":"Europe/Sarajevo","timezoneCount":1,"population":3200000},{"code":"BW","name":"Botswana","region":"Africa","currencies":[{"code":"BWP","name":"Botswanan Pula"}],"timezone":"Africa/Gaborone","timezoneCount":1,"population":2500000},{"code":"BV","name":"Bouvet Island","region":"Americas","currencies":[{"code":"NOK","name":"Norwegian Krone"}],"timezone":"UTC","timezoneCount":1,"population":0},{"code":"BR","name":"Brazil","region":"Americas","currencies":[{"code":"BRL","name":"Brazilian Real"}],"timezone":"America/Sao_Paulo","timezoneCount":16,"population":211900000},{"code":"IO","name":"British Indian Ocean Territory","region":"Africa","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"Indian/Chagos","timezoneCount":1,"population":3000},{"code":"VG","name":"British Virgin Islands","region":"Americas","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"America/Tortola","timezoneCount":1,"population":39000},{"code":"BN","name":"Brunei","region":"Asia","currencies":[{"code":"BND","name":"Brunei Dollar"}],"timezone":"Asia/Brunei","timezoneCount":1,"population":462000},{"code":"BG","name":"Bulgaria","region":"Europe","currencies":[{"code":"BGN","name":"Bulgarian Lev"}],"timezone":"Europe/Sofia","timezoneCount":1,"population":6400000},{"code":"BF","name":"Burkina Faso","region":"Africa","currencies":[{"code":"XOF","name":"West African CFA Franc"}],"timezone":"Africa/Ouagadougou","timezoneCount":1,"population":23500000},{"code":"BI","name":"Burundi","region":"Africa","currencies":[{"code":"BIF","name":"Burundian Franc"}],"timezone":"Africa/Bujumbura","timezoneCount":1,"population":14000000},{"code":"KH","name":"Cambodia","region":"Asia","currencies":[{"code":"KHR","name":"Cambodian Riel"}],"timezone":"Asia/Phnom_Penh","timezoneCount":1,"population":17600000},{"code":"CM","name":"Cameroon","region":"Africa","currencies":[{"code":"XAF","name":"Central African CFA Franc"}],"timezone":"Africa/Douala","timezoneCount":1,"population":29100000},{"code":"CA","name":"Canada","region":"Americas","currencies":[{"code":"CAD","name":"Canadian Dollar"}],"timezone":"America/Toronto","timezoneCount":23,"population":41300000},{"code":"CV","name":"Cape Verde","region":"Africa","currencies":[{"code":"CVE","name":"Cape Verdean Escudo"}],"timezone":"Atlantic/Cape_Verde","timezoneCount":1,"population":525000},{"code":"BQ","name":"Caribbean Netherlands","region":"Americas","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"America/Kralendijk","timezoneCount":1,"population":30000},{"code":"KY","name":"Cayman Islands","region":"Americas","currencies":[{"code":"KYD","name":"Cayman Islands Dollar"}],"timezone":"America/Cayman","timezoneCount":1,"population":74000},{"code":"CF","name":"Central African Republic","region":"Africa","currencies":[{"code":"XAF","name":"Central African CFA Franc"}],"timezone":"Africa/Bangui","timezoneCount":1,"population":5300000},{"code":"TD","name":"Chad","region":"Africa","currencies":[{"code":"XAF","name":"Central African CFA Franc"}],"timezone":"Africa/Ndjamena","timezoneCount":1,"population":20300000},{"code":"CL","name":"Chile","region":"Americas","currencies":[{"code":"CLP","name":"Chilean Peso"}],"timezone":"America/Santiago","timezoneCount":4,"population":19800000},{"code":"CN","name":"China","region":"Asia","currencies":[{"code":"CNY","name":"Chinese Yuan"}],"timezone":"Asia/Shanghai","timezoneCount":2,"population":1409000000},{"code":"CX","name":"Christmas Island","region":"Oceania","currencies":[{"code":"AUD","name":"Australian Dollar"}],"timezone":"Indian/Christmas","timezoneCount":1,"population":2000},{"code":"CC","name":"Cocos (Keeling) Islands","region":"Oceania","currencies":[{"code":"AUD","name":"Australian Dollar"}],"timezone":"Indian/Cocos","timezoneCount":1,"population":600},{"code":"CO","name":"Colombia","region":"Americas","currencies":[{"code":"COP","name":"Colombian Peso"}],"timezone":"America/Bogota","timezoneCount":1,"population":52900000},{"code":"KM","name":"Comoros","region":"Africa","currencies":[{"code":"KMF","name":"Comorian Franc"}],"timezone":"Indian/Comoro","timezoneCount":1,"population":866000},{"code":"CG","name":"Congo","region":"Africa","currencies":[{"code":"XAF","name":"Central African CFA Franc"}],"timezone":"Africa/Brazzaville","timezoneCount":1,"population":6300000},{"code":"CK","name":"Cook Islands","region":"Oceania","currencies":[{"code":"NZD","name":"New Zealand Dollar"}],"timezone":"Pacific/Rarotonga","timezoneCount":1,"population":17000},{"code":"CR","name":"Costa Rica","region":"Americas","currencies":[{"code":"CRC","name":"Costa Rican Colón"}],"timezone":"America/Costa_Rica","timezoneCount":1,"population":5100000},{"code":"HR","name":"Croatia","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Zagreb","timezoneCount":1,"population":3900000},{"code":"CU","name":"Cuba","region":"Americas","currencies":[{"code":"CUP","name":"Cuban Peso"}],"timezone":"America/Havana","timezoneCount":1,"population":10900000},{"code":"CW","name":"Curaçao","region":"Americas","currencies":[{"code":"XCG","name":"Caribbean guilder"}],"timezone":"America/Curacao","timezoneCount":1,"population":185000},{"code":"CY","name":"Cyprus","region":"Asia","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Asia/Nicosia","timezoneCount":2,"population":1400000},{"code":"CZ","name":"Czechia","region":"Europe","currencies":[{"code":"CZK","name":"Czech Koruna"}],"timezone":"Europe/Prague","timezoneCount":1,"population":10900000},{"code":"CI","name":"Côte d'Ivoire","region":"Africa","currencies":[{"code":"XOF","name":"West African CFA Franc"}],"timezone":"Africa/Abidjan","timezoneCount":1,"population":31900000},{"code":"CD","name":"DR Congo","region":"Africa","currencies":[{"code":"CDF","name":"Congolese Franc"}],"timezone":"Africa/Kinshasa","timezoneCount":2,"population":109300000},{"code":"DK","name":"Denmark","region":"Europe","currencies":[{"code":"DKK","name":"Danish Krone"}],"timezone":"Europe/Copenhagen","timezoneCount":1,"population":6000000},{"code":"DJ","name":"Djibouti","region":"Africa","currencies":[{"code":"DJF","name":"Djiboutian Franc"}],"timezone":"Africa/Djibouti","timezoneCount":1,"population":1200000},{"code":"DM","name":"Dominica","region":"Americas","currencies":[{"code":"XCD","name":"East Caribbean Dollar"}],"timezone":"America/Dominica","timezoneCount":1,"population":66000},{"code":"DO","name":"Dominican Republic","region":"Americas","currencies":[{"code":"DOP","name":"Dominican Peso"}],"timezone":"America/Santo_Domingo","timezoneCount":1,"population":11400000},{"code":"EC","name":"Ecuador","region":"Americas","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"America/Guayaquil","timezoneCount":2,"population":18100000},{"code":"EG","name":"Egypt","region":"Africa","currencies":[{"code":"EGP","name":"Egyptian Pound"}],"timezone":"Africa/Cairo","timezoneCount":1,"population":116500000},{"code":"SV","name":"El Salvador","region":"Americas","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"America/El_Salvador","timezoneCount":1,"population":6300000},{"code":"GQ","name":"Equatorial Guinea","region":"Africa","currencies":[{"code":"XAF","name":"Central African CFA Franc"}],"timezone":"Africa/Malabo","timezoneCount":1,"population":1900000},{"code":"ER","name":"Eritrea","region":"Africa","currencies":[{"code":"ERN","name":"Eritrean Nakfa"}],"timezone":"Africa/Asmara","timezoneCount":1,"population":3500000},{"code":"EE","name":"Estonia","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Tallinn","timezoneCount":1,"population":1400000},{"code":"SZ","name":"Eswatini","region":"Africa","currencies":[{"code":"SZL","name":"Swazi Lilangeni"}],"timezone":"Africa/Mbabane","timezoneCount":1,"population":1200000},{"code":"ET","name":"Ethiopia","region":"Africa","currencies":[{"code":"ETB","name":"Ethiopian Birr"}],"timezone":"Africa/Addis_Ababa","timezoneCount":1,"population":132100000},{"code":"FK","name":"Falkland Islands","region":"Americas","currencies":[{"code":"FKP","name":"Falkland Islands Pound"}],"timezone":"Atlantic/Stanley","timezoneCount":1,"population":3700},{"code":"FO","name":"Faroe Islands","region":"Europe","currencies":[{"code":"DKK","name":"Danish Krone"}],"timezone":"Atlantic/Faroe","timezoneCount":1,"population":55000},{"code":"FJ","name":"Fiji","region":"Oceania","currencies":[{"code":"FJD","name":"Fijian Dollar"}],"timezone":"Pacific/Fiji","timezoneCount":1,"population":929000},{"code":"FI","name":"Finland","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Helsinki","timezoneCount":1,"population":5600000},{"code":"FR","name":"France","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Paris","timezoneCount":1,"population":68400000},{"code":"GF","name":"French Guiana","region":"Americas","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"America/Cayenne","timezoneCount":1,"population":310000},{"code":"PF","name":"French Polynesia","region":"Oceania","currencies":[{"code":"XPF","name":"CFP Franc"}],"timezone":"Pacific/Tahiti","timezoneCount":3,"population":282000},{"code":"TF","name":"French Southern Territories","region":"Africa","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Indian/Kerguelen","timezoneCount":1,"population":0},{"code":"GA","name":"Gabon","region":"Africa","currencies":[{"code":"XAF","name":"Central African CFA Franc"}],"timezone":"Africa/Libreville","timezoneCount":1,"population":2500000},{"code":"GM","name":"Gambia","region":"Africa","currencies":[{"code":"GMD","name":"Gambian Dalasi"}],"timezone":"Africa/Banjul","timezoneCount":1,"population":2800000},{"code":"GE","name":"Georgia","region":"Asia","currencies":[{"code":"GEL","name":"Georgian Lari"}],"timezone":"Asia/Tbilisi","timezoneCount":1,"population":3700000},{"code":"DE","name":"Germany","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Berlin","timezoneCount":2,"population":83500000},{"code":"GH","name":"Ghana","region":"Africa","currencies":[{"code":"GHS","name":"Ghanaian Cedi"}],"timezone":"Africa/Accra","timezoneCount":1,"population":34400000},{"code":"GI","name":"Gibraltar","region":"Europe","currencies":[{"code":"GIP","name":"Gibraltar Pound"}],"timezone":"Europe/Gibraltar","timezoneCount":1,"population":39000},{"code":"GR","name":"Greece","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Athens","timezoneCount":1,"population":10400000},{"code":"GL","name":"Greenland","region":"Americas","currencies":[{"code":"DKK","name":"Danish Krone"}],"timezone":"America/Nuuk","timezoneCount":4,"population":57000},{"code":"GD","name":"Grenada","region":"Americas","currencies":[{"code":"XCD","name":"East Caribbean Dollar"}],"timezone":"America/Grenada","timezoneCount":1,"population":117000},{"code":"GP","name":"Guadeloupe","region":"Americas","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"America/Guadeloupe","timezoneCount":1,"population":375000},{"code":"GU","name":"Guam","region":"Oceania","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"Pacific/Guam","timezoneCount":1,"population":168000},{"code":"GT","name":"Guatemala","region":"Americas","currencies":[{"code":"GTQ","name":"Guatemalan Quetzal"}],"timezone":"America/Guatemala","timezoneCount":1,"population":18400000},{"code":"GG","name":"Guernsey","region":"Europe","currencies":[{"code":"GBP","name":"British Pound"}],"timezone":"Europe/Guernsey","timezoneCount":1,"population":64000},{"code":"GN","name":"Guinea","region":"Africa","currencies":[{"code":"GNF","name":"Guinean Franc"}],"timezone":"Africa/Conakry","timezoneCount":1,"population":14800000},{"code":"GW","name":"Guinea-Bissau","region":"Africa","currencies":[{"code":"XOF","name":"West African CFA Franc"}],"timezone":"Africa/Bissau","timezoneCount":1,"population":2200000},{"code":"GY","name":"Guyana","region":"Americas","currencies":[{"code":"GYD","name":"Guyanaese Dollar"}],"timezone":"America/Guyana","timezoneCount":1,"population":831000},{"code":"HT","name":"Haiti","region":"Americas","currencies":[{"code":"HTG","name":"Haitian Gourde"},{"code":"USD","name":"US Dollar"}],"timezone":"America/Port-au-Prince","timezoneCount":1,"population":11800000},{"code":"HM","name":"Heard & McDonald Islands","region":"Oceania","currencies":[{"code":"AUD","name":"Australian Dollar"}],"timezone":"Etc/GMT-5","timezoneCount":1,"population":0},{"code":"HN","name":"Honduras","region":"Americas","currencies":[{"code":"HNL","name":"Honduran Lempira"}],"timezone":"America/Tegucigalpa","timezoneCount":1,"population":10800000},{"code":"HK","name":"Hong Kong","region":"Asia","currencies":[{"code":"HKD","name":"Hong Kong Dollar"}],"timezone":"Asia/Hong_Kong","timezoneCount":1,"population":7500000},{"code":"HU","name":"Hungary","region":"Europe","currencies":[{"code":"HUF","name":"Hungarian Forint"}],"timezone":"Europe/Budapest","timezoneCount":1,"population":9600000},{"code":"IS","name":"Iceland","region":"Europe","currencies":[{"code":"ISK","name":"Icelandic Króna"}],"timezone":"Atlantic/Reykjavik","timezoneCount":1,"population":390000},{"code":"IN","name":"India","region":"Asia","currencies":[{"code":"INR","name":"Indian Rupee"}],"timezone":"Asia/Kolkata","timezoneCount":1,"population":1451000000},{"code":"ID","name":"Indonesia","region":"Asia","currencies":[{"code":"IDR","name":"Indonesian Rupiah"}],"timezone":"Asia/Jakarta","timezoneCount":4,"population":283500000},{"code":"IR","name":"Iran","region":"Asia","currencies":[{"code":"IRR","name":"Iranian Rial"}],"timezone":"Asia/Tehran","timezoneCount":1,"population":91600000},{"code":"IQ","name":"Iraq","region":"Asia","currencies":[{"code":"IQD","name":"Iraqi Dinar"}],"timezone":"Asia/Baghdad","timezoneCount":1,"population":46000000},{"code":"IE","name":"Ireland","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Dublin","timezoneCount":1,"population":5300000},{"code":"IM","name":"Isle of Man","region":"Europe","currencies":[{"code":"GBP","name":"British Pound"}],"timezone":"Europe/Isle_of_Man","timezoneCount":1,"population":84000},{"code":"IL","name":"Israel","region":"Asia","currencies":[{"code":"ILS","name":"Israeli New Shekel"}],"timezone":"Asia/Jerusalem","timezoneCount":1,"population":9400000},{"code":"IT","name":"Italy","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Rome","timezoneCount":1,"population":59000000},{"code":"JM","name":"Jamaica","region":"Americas","currencies":[{"code":"JMD","name":"Jamaican Dollar"}],"timezone":"America/Jamaica","timezoneCount":1,"population":2800000},{"code":"JP","name":"Japan","region":"Asia","currencies":[{"code":"JPY","name":"Japanese Yen"}],"timezone":"Asia/Tokyo","timezoneCount":1,"population":123800000},{"code":"JE","name":"Jersey","region":"Europe","currencies":[{"code":"GBP","name":"British Pound"}],"timezone":"Europe/Jersey","timezoneCount":1,"population":103000},{"code":"JO","name":"Jordan","region":"Asia","currencies":[{"code":"JOD","name":"Jordanian Dinar"}],"timezone":"Asia/Amman","timezoneCount":1,"population":11600000},{"code":"KZ","name":"Kazakhstan","region":"Asia","currencies":[{"code":"KZT","name":"Kazakhstani Tenge"}],"timezone":"Asia/Almaty","timezoneCount":7,"population":20600000},{"code":"KE","name":"Kenya","region":"Africa","currencies":[{"code":"KES","name":"Kenyan Shilling"}],"timezone":"Africa/Nairobi","timezoneCount":1,"population":56400000},{"code":"KI","name":"Kiribati","region":"Oceania","currencies":[{"code":"AUD","name":"Australian Dollar"}],"timezone":"Pacific/Tarawa","timezoneCount":3,"population":134000},{"code":"KW","name":"Kuwait","region":"Asia","currencies":[{"code":"KWD","name":"Kuwaiti Dinar"}],"timezone":"Asia/Kuwait","timezoneCount":1,"population":4900000},{"code":"KG","name":"Kyrgyzstan","region":"Asia","currencies":[{"code":"KGS","name":"Kyrgystani Som"}],"timezone":"Asia/Bishkek","timezoneCount":1,"population":7200000},{"code":"LA","name":"Laos","region":"Asia","currencies":[{"code":"LAK","name":"Laotian Kip"}],"timezone":"Asia/Vientiane","timezoneCount":1,"population":7800000},{"code":"LV","name":"Latvia","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Riga","timezoneCount":1,"population":1900000},{"code":"LB","name":"Lebanon","region":"Asia","currencies":[{"code":"LBP","name":"Lebanese Pound"}],"timezone":"Asia/Beirut","timezoneCount":1,"population":5800000},{"code":"LS","name":"Lesotho","region":"Africa","currencies":[{"code":"ZAR","name":"South African Rand"},{"code":"LSL","name":"Lesotho Loti"}],"timezone":"Africa/Maseru","timezoneCount":1,"population":2300000},{"code":"LR","name":"Liberia","region":"Africa","currencies":[{"code":"LRD","name":"Liberian Dollar"}],"timezone":"Africa/Monrovia","timezoneCount":1,"population":5600000},{"code":"LY","name":"Libya","region":"Africa","currencies":[{"code":"LYD","name":"Libyan Dinar"}],"timezone":"Africa/Tripoli","timezoneCount":1,"population":7400000},{"code":"LI","name":"Liechtenstein","region":"Europe","currencies":[{"code":"CHF","name":"Swiss Franc"}],"timezone":"Europe/Vaduz","timezoneCount":1,"population":40000},{"code":"LT","name":"Lithuania","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Vilnius","timezoneCount":1,"population":2900000},{"code":"LU","name":"Luxembourg","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Luxembourg","timezoneCount":1,"population":673000},{"code":"MO","name":"Macao","region":"Asia","currencies":[{"code":"MOP","name":"Macanese Pataca"}],"timezone":"Asia/Macau","timezoneCount":1,"population":714000},{"code":"MG","name":"Madagascar","region":"Africa","currencies":[{"code":"MGA","name":"Malagasy Ariary"}],"timezone":"Indian/Antananarivo","timezoneCount":1,"population":31900000},{"code":"MW","name":"Malawi","region":"Africa","currencies":[{"code":"MWK","name":"Malawian Kwacha"}],"timezone":"Africa/Blantyre","timezoneCount":1,"population":21700000},{"code":"MY","name":"Malaysia","region":"Asia","currencies":[{"code":"MYR","name":"Malaysian Ringgit"}],"timezone":"Asia/Kuala_Lumpur","timezoneCount":2,"population":35600000},{"code":"MV","name":"Maldives","region":"Asia","currencies":[{"code":"MVR","name":"Maldivian Rufiyaa"}],"timezone":"Indian/Maldives","timezoneCount":1,"population":527000},{"code":"ML","name":"Mali","region":"Africa","currencies":[{"code":"XOF","name":"West African CFA Franc"}],"timezone":"Africa/Bamako","timezoneCount":1,"population":24500000},{"code":"MT","name":"Malta","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Malta","timezoneCount":1,"population":540000},{"code":"MH","name":"Marshall Islands","region":"Oceania","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"Pacific/Majuro","timezoneCount":2,"population":38000},{"code":"MQ","name":"Martinique","region":"Americas","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"America/Martinique","timezoneCount":1,"population":345000},{"code":"MR","name":"Mauritania","region":"Africa","currencies":[{"code":"MRU","name":"Mauritanian Ouguiya"}],"timezone":"Africa/Nouakchott","timezoneCount":1,"population":5200000},{"code":"MU","name":"Mauritius","region":"Africa","currencies":[{"code":"MUR","name":"Mauritian Rupee"}],"timezone":"Indian/Mauritius","timezoneCount":1,"population":1300000},{"code":"YT","name":"Mayotte","region":"Africa","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Indian/Mayotte","timezoneCount":1,"population":321000},{"code":"MX","name":"Mexico","region":"Americas","currencies":[{"code":"MXN","name":"Mexican Peso"}],"timezone":"America/Mexico_City","timezoneCount":12,"population":130900000},{"code":"FM","name":"Micronesia","region":"Oceania","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"Pacific/Chuuk","timezoneCount":3,"population":113000},{"code":"MD","name":"Moldova","region":"Europe","currencies":[{"code":"MDL","name":"Moldovan Leu"}],"timezone":"Europe/Chisinau","timezoneCount":1,"population":2400000},{"code":"MC","name":"Monaco","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Monaco","timezoneCount":1,"population":39000},{"code":"MN","name":"Mongolia","region":"Asia","currencies":[{"code":"MNT","name":"Mongolian Tugrik"}],"timezone":"Asia/Ulaanbaatar","timezoneCount":2,"population":3500000},{"code":"ME","name":"Montenegro","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Podgorica","timezoneCount":1,"population":620000},{"code":"MS","name":"Montserrat","region":"Americas","currencies":[{"code":"XCD","name":"East Caribbean Dollar"}],"timezone":"America/Montserrat","timezoneCount":1,"population":4400},{"code":"MA","name":"Morocco","region":"Africa","currencies":[{"code":"MAD","name":"Moroccan Dirham"}],"timezone":"Africa/Casablanca","timezoneCount":1,"population":38100000},{"code":"MZ","name":"Mozambique","region":"Africa","currencies":[{"code":"MZN","name":"Mozambican Metical"}],"timezone":"Africa/Maputo","timezoneCount":1,"population":34600000},{"code":"MM","name":"Myanmar","region":"Asia","currencies":[{"code":"MMK","name":"Myanmar Kyat"}],"timezone":"Asia/Yangon","timezoneCount":1,"population":54500000},{"code":"NA","name":"Namibia","region":"Africa","currencies":[{"code":"ZAR","name":"South African Rand"},{"code":"NAD","name":"Namibian Dollar"}],"timezone":"Africa/Windhoek","timezoneCount":1,"population":3000000},{"code":"NR","name":"Nauru","region":"Oceania","currencies":[{"code":"AUD","name":"Australian Dollar"}],"timezone":"Pacific/Nauru","timezoneCount":1,"population":12000},{"code":"NP","name":"Nepal","region":"Asia","currencies":[{"code":"NPR","name":"Nepalese Rupee"}],"timezone":"Asia/Kathmandu","timezoneCount":1,"population":29700000},{"code":"NL","name":"Netherlands","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Amsterdam","timezoneCount":1,"population":18000000},{"code":"NC","name":"New Caledonia","region":"Oceania","currencies":[{"code":"XPF","name":"CFP Franc"}],"timezone":"Pacific/Noumea","timezoneCount":1,"population":290000},{"code":"NZ","name":"New Zealand","region":"Oceania","currencies":[{"code":"NZD","name":"New Zealand Dollar"}],"timezone":"Pacific/Auckland","timezoneCount":2,"population":5200000},{"code":"NI","name":"Nicaragua","region":"Americas","currencies":[{"code":"NIO","name":"Nicaraguan Córdoba"}],"timezone":"America/Managua","timezoneCount":1,"population":7000000},{"code":"NE","name":"Niger","region":"Africa","currencies":[{"code":"XOF","name":"West African CFA Franc"}],"timezone":"Africa/Niamey","timezoneCount":1,"population":27000000},{"code":"NG","name":"Nigeria","region":"Africa","currencies":[{"code":"NGN","name":"Nigerian Naira"}],"timezone":"Africa/Lagos","timezoneCount":1,"population":232700000},{"code":"NU","name":"Niue","region":"Oceania","currencies":[{"code":"NZD","name":"New Zealand Dollar"}],"timezone":"Pacific/Niue","timezoneCount":1,"population":1600},{"code":"NF","name":"Norfolk Island","region":"Oceania","currencies":[{"code":"AUD","name":"Australian Dollar"}],"timezone":"Pacific/Norfolk","timezoneCount":1,"population":2000},{"code":"KP","name":"North Korea","region":"Asia","currencies":[{"code":"KPW","name":"North Korean Won"}],"timezone":"Asia/Pyongyang","timezoneCount":1,"population":26500000},{"code":"MK","name":"North Macedonia","region":"Europe","currencies":[{"code":"MKD","name":"Macedonian Denar"}],"timezone":"Europe/Skopje","timezoneCount":1,"population":1800000},{"code":"MP","name":"Northern Mariana Islands","region":"Oceania","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"Pacific/Saipan","timezoneCount":1,"population":44000},{"code":"NO","name":"Norway","region":"Europe","currencies":[{"code":"NOK","name":"Norwegian Krone"}],"timezone":"Europe/Oslo","timezoneCount":1,"population":5600000},{"code":"OM","name":"Oman","region":"Asia","currencies":[{"code":"OMR","name":"Omani Rial"}],"timezone":"Asia/Muscat","timezoneCount":1,"population":5300000},{"code":"PK","name":"Pakistan","region":"Asia","currencies":[{"code":"PKR","name":"Pakistani Rupee"}],"timezone":"Asia/Karachi","timezoneCount":1,"population":251300000},{"code":"PW","name":"Palau","region":"Oceania","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"Pacific/Palau","timezoneCount":1,"population":18000},{"code":"PS","name":"Palestine","region":"Asia","currencies":[{"code":"ILS","name":"Israeli New Shekel"},{"code":"JOD","name":"Jordanian Dinar"}],"timezone":"Asia/Hebron","timezoneCount":2,"population":5500000},{"code":"PA","name":"Panama","region":"Americas","currencies":[{"code":"PAB","name":"Panamanian Balboa"},{"code":"USD","name":"US Dollar"}],"timezone":"America/Panama","timezoneCount":1,"population":4500000},{"code":"PG","name":"Papua New Guinea","region":"Oceania","currencies":[{"code":"PGK","name":"Papua New Guinean Kina"}],"timezone":"Pacific/Port_Moresby","timezoneCount":2,"population":10600000},{"code":"PY","name":"Paraguay","region":"Americas","currencies":[{"code":"PYG","name":"Paraguayan Guarani"}],"timezone":"America/Asuncion","timezoneCount":1,"population":6900000},{"code":"PE","name":"Peru","region":"Americas","currencies":[{"code":"PEN","name":"Peruvian Sol"}],"timezone":"America/Lima","timezoneCount":1,"population":34200000},{"code":"PH","name":"Philippines","region":"Asia","currencies":[{"code":"PHP","name":"Philippine Peso"}],"timezone":"Asia/Manila","timezoneCount":1,"population":115800000},{"code":"PN","name":"Pitcairn Islands","region":"Oceania","currencies":[{"code":"NZD","name":"New Zealand Dollar"}],"timezone":"Pacific/Pitcairn","timezoneCount":1,"population":50},{"code":"PL","name":"Poland","region":"Europe","currencies":[{"code":"PLN","name":"Polish Zloty"}],"timezone":"Europe/Warsaw","timezoneCount":1,"population":36600000},{"code":"PT","name":"Portugal","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Lisbon","timezoneCount":3,"population":10600000},{"code":"PR","name":"Puerto Rico","region":"Americas","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"America/Puerto_Rico","timezoneCount":1,"population":3200000},{"code":"QA","name":"Qatar","region":"Asia","currencies":[{"code":"QAR","name":"Qatari Riyal"}],"timezone":"Asia/Qatar","timezoneCount":1,"population":3000000},{"code":"RO","name":"Romania","region":"Europe","currencies":[{"code":"RON","name":"Romanian Leu"}],"timezone":"Europe/Bucharest","timezoneCount":1,"population":19000000},{"code":"RU","name":"Russia","region":"Europe","currencies":[{"code":"RUB","name":"Russian Ruble"}],"timezone":"Europe/Moscow","timezoneCount":26,"population":144800000},{"code":"RW","name":"Rwanda","region":"Africa","currencies":[{"code":"RWF","name":"Rwandan Franc"}],"timezone":"Africa/Kigali","timezoneCount":1,"population":14300000},{"code":"RE","name":"Réunion","region":"Africa","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Indian/Reunion","timezoneCount":1,"population":885000},{"code":"WS","name":"Samoa","region":"Oceania","currencies":[{"code":"WST","name":"Samoan Tala"}],"timezone":"Pacific/Apia","timezoneCount":1,"population":219000},{"code":"SM","name":"San Marino","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/San_Marino","timezoneCount":1,"population":34000},{"code":"SA","name":"Saudi Arabia","region":"Asia","currencies":[{"code":"SAR","name":"Saudi Riyal"}],"timezone":"Asia/Riyadh","timezoneCount":1,"population":33900000},{"code":"SN","name":"Senegal","region":"Africa","currencies":[{"code":"XOF","name":"West African CFA Franc"}],"timezone":"Africa/Dakar","timezoneCount":1,"population":18500000},{"code":"RS","name":"Serbia","region":"Europe","currencies":[{"code":"RSD","name":"Serbian Dinar"}],"timezone":"Europe/Belgrade","timezoneCount":1,"population":6600000},{"code":"SC","name":"Seychelles","region":"Africa","currencies":[{"code":"SCR","name":"Seychellois Rupee"}],"timezone":"Indian/Mahe","timezoneCount":1,"population":131000},{"code":"SL","name":"Sierra Leone","region":"Africa","currencies":[{"code":"SLE","name":"Sierra Leonean Leone"}],"timezone":"Africa/Freetown","timezoneCount":1,"population":8600000},{"code":"SG","name":"Singapore","region":"Asia","currencies":[{"code":"SGD","name":"Singapore Dollar"}],"timezone":"Asia/Singapore","timezoneCount":1,"population":5900000},{"code":"SX","name":"Sint Maarten","region":"Americas","currencies":[{"code":"XCG","name":"Caribbean guilder"}],"timezone":"America/Lower_Princes","timezoneCount":1,"population":44000},{"code":"SK","name":"Slovakia","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Bratislava","timezoneCount":1,"population":5400000},{"code":"SI","name":"Slovenia","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Ljubljana","timezoneCount":1,"population":2100000},{"code":"SB","name":"Solomon Islands","region":"Oceania","currencies":[{"code":"SBD","name":"Solomon Islands Dollar"}],"timezone":"Pacific/Guadalcanal","timezoneCount":1,"population":820000},{"code":"SO","name":"Somalia","region":"Africa","currencies":[{"code":"SOS","name":"Somali Shilling"}],"timezone":"Africa/Mogadishu","timezoneCount":1,"population":19000000},{"code":"ZA","name":"South Africa","region":"Africa","currencies":[{"code":"ZAR","name":"South African Rand"}],"timezone":"Africa/Johannesburg","timezoneCount":1,"population":64000000},{"code":"GS","name":"South Georgia & South Sandwich Islands","region":"Americas","currencies":[{"code":"GBP","name":"British Pound"}],"timezone":"Atlantic/South_Georgia","timezoneCount":1,"population":30},{"code":"KR","name":"South Korea","region":"Asia","currencies":[{"code":"KRW","name":"South Korean Won"}],"timezone":"Asia/Seoul","timezoneCount":1,"population":51700000},{"code":"SS","name":"South Sudan","region":"Africa","currencies":[{"code":"SSP","name":"South Sudanese Pound"}],"timezone":"Africa/Juba","timezoneCount":1,"population":11900000},{"code":"ES","name":"Spain","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Madrid","timezoneCount":3,"population":48600000},{"code":"LK","name":"Sri Lanka","region":"Asia","currencies":[{"code":"LKR","name":"Sri Lankan Rupee"}],"timezone":"Asia/Colombo","timezoneCount":1,"population":23100000},{"code":"BL","name":"St. Barthélemy","region":"Americas","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"America/St_Barthelemy","timezoneCount":1,"population":11000},{"code":"SH","name":"St. Helena","region":"Africa","currencies":[{"code":"SHP","name":"St. Helena Pound"}],"timezone":"Atlantic/St_Helena","timezoneCount":1,"population":5000},{"code":"KN","name":"St. Kitts & Nevis","region":"Americas","currencies":[{"code":"XCD","name":"East Caribbean Dollar"}],"timezone":"America/St_Kitts","timezoneCount":1,"population":47000},{"code":"LC","name":"St. Lucia","region":"Americas","currencies":[{"code":"XCD","name":"East Caribbean Dollar"}],"timezone":"America/St_Lucia","timezoneCount":1,"population":180000},{"code":"MF","name":"St. Martin","region":"Americas","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"America/Marigot","timezoneCount":1,"population":32000},{"code":"PM","name":"St. Pierre & Miquelon","region":"Americas","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"America/Miquelon","timezoneCount":1,"population":5800},{"code":"VC","name":"St. Vincent & Grenadines","region":"Americas","currencies":[{"code":"XCD","name":"East Caribbean Dollar"}],"timezone":"America/St_Vincent","timezoneCount":1,"population":101000},{"code":"SD","name":"Sudan","region":"Africa","currencies":[{"code":"SDG","name":"Sudanese Pound"}],"timezone":"Africa/Khartoum","timezoneCount":1,"population":50400000},{"code":"SR","name":"Suriname","region":"Americas","currencies":[{"code":"SRD","name":"Surinamese Dollar"}],"timezone":"America/Paramaribo","timezoneCount":1,"population":634000},{"code":"SJ","name":"Svalbard & Jan Mayen","region":"Europe","currencies":[{"code":"NOK","name":"Norwegian Krone"}],"timezone":"Arctic/Longyearbyen","timezoneCount":1,"population":2500},{"code":"SE","name":"Sweden","region":"Europe","currencies":[{"code":"SEK","name":"Swedish Krona"}],"timezone":"Europe/Stockholm","timezoneCount":1,"population":10600000},{"code":"CH","name":"Switzerland","region":"Europe","currencies":[{"code":"CHF","name":"Swiss Franc"}],"timezone":"Europe/Zurich","timezoneCount":1,"population":9000000},{"code":"SY","name":"Syria","region":"Asia","currencies":[{"code":"SYP","name":"Syrian Pound"}],"timezone":"Asia/Damascus","timezoneCount":1,"population":24700000},{"code":"ST","name":"São Tomé & Príncipe","region":"Africa","currencies":[{"code":"STN","name":"São Tomé & Príncipe Dobra"}],"timezone":"Africa/Sao_Tome","timezoneCount":1,"population":236000},{"code":"TW","name":"Taiwan","region":"Asia","currencies":[{"code":"TWD","name":"New Taiwan Dollar"}],"timezone":"Asia/Taipei","timezoneCount":1,"population":23400000},{"code":"TJ","name":"Tajikistan","region":"Asia","currencies":[{"code":"TJS","name":"Tajikistani Somoni"}],"timezone":"Asia/Dushanbe","timezoneCount":1,"population":10600000},{"code":"TZ","name":"Tanzania","region":"Africa","currencies":[{"code":"TZS","name":"Tanzanian Shilling"}],"timezone":"Africa/Dar_es_Salaam","timezoneCount":1,"population":68600000},{"code":"TH","name":"Thailand","region":"Asia","currencies":[{"code":"THB","name":"Thai Baht"}],"timezone":"Asia/Bangkok","timezoneCount":1,"population":71700000},{"code":"TL","name":"Timor-Leste","region":"Asia","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"Asia/Dili","timezoneCount":1,"population":1400000},{"code":"TG","name":"Togo","region":"Africa","currencies":[{"code":"XOF","name":"West African CFA Franc"}],"timezone":"Africa/Lome","timezoneCount":1,"population":9500000},{"code":"TK","name":"Tokelau","region":"Oceania","currencies":[{"code":"NZD","name":"New Zealand Dollar"}],"timezone":"Pacific/Fakaofo","timezoneCount":1,"population":2400},{"code":"TO","name":"Tonga","region":"Oceania","currencies":[{"code":"TOP","name":"Tongan Paʻanga"}],"timezone":"Pacific/Tongatapu","timezoneCount":1,"population":104000},{"code":"TT","name":"Trinidad & Tobago","region":"Americas","currencies":[{"code":"TTD","name":"Trinidad & Tobago Dollar"}],"timezone":"America/Port_of_Spain","timezoneCount":1,"population":1500000},{"code":"TN","name":"Tunisia","region":"Africa","currencies":[{"code":"TND","name":"Tunisian Dinar"}],"timezone":"Africa/Tunis","timezoneCount":1,"population":12300000},{"code":"TM","name":"Turkmenistan","region":"Asia","currencies":[{"code":"TMT","name":"Turkmenistani Manat"}],"timezone":"Asia/Ashgabat","timezoneCount":1,"population":7500000},{"code":"TC","name":"Turks & Caicos Islands","region":"Americas","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"America/Grand_Turk","timezoneCount":1,"population":47000},{"code":"TV","name":"Tuvalu","region":"Oceania","currencies":[{"code":"AUD","name":"Australian Dollar"}],"timezone":"Pacific/Funafuti","timezoneCount":1,"population":10000},{"code":"TR","name":"Türkiye","region":"Asia","currencies":[{"code":"TRY","name":"Turkish Lira"}],"timezone":"Europe/Istanbul","timezoneCount":1,"population":85500000},{"code":"UM","name":"U.S. Outlying Islands","region":"Americas","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"Pacific/Wake","timezoneCount":2,"population":200},{"code":"VI","name":"U.S. Virgin Islands","region":"Americas","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"America/St_Thomas","timezoneCount":1,"population":85000},{"code":"UG","name":"Uganda","region":"Africa","currencies":[{"code":"UGX","name":"Ugandan Shilling"}],"timezone":"Africa/Kampala","timezoneCount":1,"population":50000000},{"code":"UA","name":"Ukraine","region":"Europe","currencies":[{"code":"UAH","name":"Ukrainian Hryvnia"}],"timezone":"Europe/Kyiv","timezoneCount":2,"population":37900000},{"code":"AE","name":"United Arab Emirates","region":"Asia","currencies":[{"code":"AED","name":"United Arab Emirates Dirham"}],"timezone":"Asia/Dubai","timezoneCount":1,"population":10900000},{"code":"GB","name":"United Kingdom","region":"Europe","currencies":[{"code":"GBP","name":"British Pound"}],"timezone":"Europe/London","timezoneCount":1,"population":69100000},{"code":"US","name":"United States","region":"Americas","currencies":[{"code":"USD","name":"US Dollar"}],"timezone":"America/New_York","timezoneCount":29,"population":340100000},{"code":"UY","name":"Uruguay","region":"Americas","currencies":[{"code":"UYU","name":"Uruguayan Peso"}],"timezone":"America/Montevideo","timezoneCount":1,"population":3400000},{"code":"UZ","name":"Uzbekistan","region":"Asia","currencies":[{"code":"UZS","name":"Uzbekistani Som"}],"timezone":"Asia/Tashkent","timezoneCount":2,"population":37000000},{"code":"VU","name":"Vanuatu","region":"Oceania","currencies":[{"code":"VUV","name":"Vanuatu Vatu"}],"timezone":"Pacific/Efate","timezoneCount":1,"population":335000},{"code":"VA","name":"Vatican City","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Vatican","timezoneCount":1,"population":800},{"code":"VE","name":"Venezuela","region":"Americas","currencies":[{"code":"VES","name":"Venezuelan Bolívar"}],"timezone":"America/Caracas","timezoneCount":1,"population":28400000},{"code":"VN","name":"Vietnam","region":"Asia","currencies":[{"code":"VND","name":"Vietnamese Dong"}],"timezone":"Asia/Ho_Chi_Minh","timezoneCount":1,"population":101000000},{"code":"WF","name":"Wallis & Futuna","region":"Oceania","currencies":[{"code":"XPF","name":"CFP Franc"}],"timezone":"Pacific/Wallis","timezoneCount":1,"population":11000},{"code":"EH","name":"Western Sahara","region":"Africa","currencies":[{"code":"MAD","name":"Moroccan Dirham"}],"timezone":"Africa/El_Aaiun","timezoneCount":1,"population":590000},{"code":"YE","name":"Yemen","region":"Asia","currencies":[{"code":"YER","name":"Yemeni Rial"}],"timezone":"Asia/Aden","timezoneCount":1,"population":40600000},{"code":"ZM","name":"Zambia","region":"Africa","currencies":[{"code":"ZMW","name":"Zambian Kwacha"}],"timezone":"Africa/Lusaka","timezoneCount":1,"population":21300000},{"code":"ZW","name":"Zimbabwe","region":"Africa","currencies":[{"code":"USD","name":"US Dollar"},{"code":"ZWG","name":"Zimbabwean Gold"}],"timezone":"Africa/Harare","timezoneCount":1,"population":16600000},{"code":"AX","name":"Åland Islands","region":"Europe","currencies":[{"code":"EUR","name":"Euro"}],"timezone":"Europe/Mariehamn","timezoneCount":1,"population":30000}];
 
-    let allCountries = [];
+    function flagEmoji(code) {
+        return code.toUpperCase().replace(/./g,
+            ch => String.fromCodePoint(127397 + ch.charCodeAt(0)));
+    }
 
-    async function loadCountries() {
-        try {
-
-            const response = await fetch(
-              "https://restcountries.com/v3.1/all?fields=name,flags,currencies,timezones,population,region"
-            );
-
-            const countries = await response.json();
-
-            allCountries = countries.sort((a,b)=>
-                a.name.common.localeCompare(b.name.common)
-            );
-
-            document.getElementById("countryCount").textContent =
-                allCountries.length;
-
-            const currencies = new Set();
-
-            allCountries.forEach(c=>{
-                if(c.currencies){
-                    Object.keys(c.currencies).forEach(cur=>{
-                        currencies.add(cur);
-                    });
-                }
-            });
-
-            document.getElementById("currencyCount").textContent =
-                currencies.size;
-
-            renderCountries(allCountries);
-
-            setInterval(()=>{
-                renderCountries(filterCurrent());
-            },1000);
-
-        } catch(error){
-            document.getElementById("countries").innerHTML =
-                "<h2>Failed to load countries</h2>";
-        }
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, ch => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        })[ch]);
     }
 
     function getLocalTime(timezone) {
         try {
-
-            if (timezone.startsWith("UTC")) {
-
-                const now = new Date();
-
-                const match = timezone.match(
-                    /UTC([+-])(\d{1,2})(?::(\d{2}))?/
-                );
-
-                if (!match) return "N/A";
-
-                const sign = match[1] === "+" ? 1 : -1;
-                const hours = parseInt(match[2]);
-                const minutes = parseInt(match[3] || 0);
-
-                const offsetMs =
-                    sign *
-                    ((hours * 60 + minutes) * 60 * 1000);
-
-                const utc =
-                    now.getTime() +
-                    now.getTimezoneOffset() * 60000;
-
-                const local = new Date(utc + offsetMs);
-
-                return local.toLocaleTimeString("en-US");
-            }
-
-            return new Date().toLocaleTimeString(
-                "en-US",
-                { timeZone: timezone }
-            );
-
+            return new Date().toLocaleTimeString("en-US", { timeZone: timezone });
         } catch (e) {
             return "N/A";
         }
     }
 
-    function renderCountries(countries){
+    function formatPopulation(n) {
+        return n > 0 ? n.toLocaleString("en-US") : "Uninhabited";
+    }
 
+    // Flag images come from a free static image CDN (not an API, no key).
+    // If an image can't load (e.g. offline), the emoji flag is shown instead.
+    function flagHtml(c) {
+        const emoji = flagEmoji(c.code);
+        const src = `https://flags.restcountries.com/v5/w320/${c.code.toLowerCase()}.png`;
+        return `<img class="flag" loading="lazy" src="${src}" alt="Flag of ${escapeHtml(c.name)}"
+                     onerror="this.replaceWith(document.createTextNode('${emoji}'))">`;
+    }
+
+    function renderCountries(list) {
         const container = document.getElementById("countries");
 
-        container.innerHTML = countries.map(country=>{
+        if (!list.length) {
+            container.innerHTML = `<div class="empty">No countries found</div>`;
+            return;
+        }
 
-            const currency = country.currencies
-                ? Object.entries(country.currencies)[0]
-                : null;
-
-            const currencyCode = currency ? currency[0] : "N/A";
-            const currencyName = currency ? currency[1].name : "N/A";
-
-            const timezone = country.timezones?.[0] || "UTC";
+        container.innerHTML = list.map(c => {
+            const cur = c.currencies[0];
+            const curCode = cur ? cur.code : "None";
+            const curName = cur
+                ? c.currencies.map(x => x.name).join(", ")
+                : "None";
+            const zones = c.timezoneCount > 1 ? ` (${c.timezoneCount} zones)` : "";
 
             return `
             <div class="card">
-
-                <img class="flag"
-                     src="${country.flags.svg}"
-                     alt="${country.name.common}">
-
+                <div class="flag-box">${flagHtml(c)}</div>
                 <div class="content">
-
-                    <div class="country">
-                        ${country.name.common}
-                    </div>
+                    <div class="country">${escapeHtml(c.name)}</div>
 
                     <div class="info">
                         <span class="label">Region</span>
-                        <span>${country.region || 'N/A'}</span>
+                        <span>${escapeHtml(c.region)}</span>
                     </div>
-
                     <div class="info">
                         <span class="label">Currency</span>
-                        <span>${currencyCode}</span>
+                        <span>${escapeHtml(c.currencies.map(x => x.code).join(", ") || curCode)}</span>
                     </div>
-
                     <div class="info">
                         <span class="label">Currency Name</span>
-                        <span>${currencyName}</span>
+                        <span>${escapeHtml(curName)}</span>
                     </div>
-
                     <div class="info">
-                        <span class="label">Local Time</span>
-                        <span class="time">
-                            ${getLocalTime(timezone)}
-                        </span>
+                        <span class="label">Local Time${zones}</span>
+                        <span class="time" data-tz="${escapeHtml(c.timezone)}">${getLocalTime(c.timezone)}</span>
                     </div>
-
                     <div class="info">
                         <span class="label">Population</span>
-                        <span>
-                            ${country.population.toLocaleString()}
-                        </span>
+                        <span>${formatPopulation(c.population)}</span>
                     </div>
-
                 </div>
-            </div>
-            `;
-        }).join('');
+            </div>`;
+        }).join("");
     }
 
-    function filterCurrent(){
-        const search = document
-            .getElementById("search")
-            .value
-            .toLowerCase();
+    function updateTimes() {
+        document.querySelectorAll(".time[data-tz]").forEach(el => {
+            el.textContent = getLocalTime(el.dataset.tz);
+        });
+    }
 
-        return allCountries.filter(country =>
-            country.name.common.toLowerCase()
-            .includes(search)
+    function filterCurrent() {
+        const q = document.getElementById("search").value.trim().toLowerCase();
+        if (!q) return COUNTRIES;
+        return COUNTRIES.filter(c =>
+            c.name.toLowerCase().includes(q) ||
+            c.code.toLowerCase() === q ||
+            c.region.toLowerCase().includes(q) ||
+            c.currencies.some(x =>
+                x.code.toLowerCase() === q || x.name.toLowerCase().includes(q))
         );
     }
 
-    document.getElementById("search")
-    .addEventListener("input",()=>{
+    document.getElementById("countryCount").textContent = COUNTRIES.length;
+    document.getElementById("currencyCount").textContent =
+        new Set(COUNTRIES.flatMap(c => c.currencies.map(x => x.code))).size;
+
+    document.getElementById("search").addEventListener("input", () => {
         renderCountries(filterCurrent());
     });
 
-    loadCountries();
-
+    renderCountries(COUNTRIES);
+    setInterval(updateTimes, 1000);
 </script>
 
 </body>
