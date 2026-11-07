@@ -56,4 +56,7 @@ jobs:
             docker run -d --name ${{ github.event.repository.name }} --restart unless-stopped \
               -p 8055:8055 \
               ${{ env.IMAGE }}:${{ github.sha }}
+            docker images ${{ env.IMAGE }} --format '{{.Repository}}:{{.Tag}}' \
+              | grep -v ":${{ github.sha }}$" \
+              | xargs -r docker rmi
             docker image prune -f
